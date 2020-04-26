@@ -2,11 +2,15 @@
 
 set -euo pipefail
 
-while getopts "v:h" opt; do
+use_github_host=0
+
+while getopts "v:gh" opt; do
   case "$opt" in
     "v") llvm_version="$OPTARG";;
+    "g") use_github_host=1;;
     "h") echo "Usage:"
        echo "-v - Version of clang+llvm to use"
+       echo "-g - Use github to download releases"
        exit 2
        ;;
     "?") echo "invalid option: -$OPTARG"; exit 1;;
@@ -18,7 +22,6 @@ if ! [[ "${llvm_version:-}" ]]; then
   exit 1
 fi
 
-url_base="releases.llvm.org/${llvm_version}"
 tmp_dir="$(mktemp -d)"
 
 cleanup() {
@@ -28,13 +31,35 @@ cleanup() {
 }
 trap 'cleanup' INT HUP QUIT TERM EXIT
 
-wget --compression gzip --recursive --level 1 --directory-prefix="${tmp_dir}" \
-  --accept-regex "clang%2bllvm.*tar.xz$" "http://${url_base}/"
+llvm_host() {
+  local url_base="releases.llvm.org/${llvm_version}"
+  output_dir="${tmp_dir}/${url_base}"
+  wget --compression gzip --recursive --level 1 --directory-prefix="${tmp_dir}" \
+    --accept-regex "clang%2bllvm.*tar.xz$" "http://${url_base}/"
+}
+
+github_host() {
+  output_dir="${tmp_dir}"
+  (
+  cd "${output_dir}"
+  curl -s "https://api.github.com/repos/llvm/llvm-project/releases/tags/llvmorg-${llvm_version}" | \
+    jq .assets[].browser_download_url | \
+    tee /Users/sbagaria/Downloads/urls.txt | \
+    grep 'clang%2Bllvm.*tar.xz"$' | \
+    tee /Users/sbagaria/Downloads/filtered_urls.txt | \
+    xargs -n1 curl -L -O
+  )
+}
+
+if (( use_github_host )); then
+  github_host
+else
+  llvm_host
+fi
 
 echo ""
 echo "===="
 echo "Checksums for clang+llvm distributions are:"
-output_dir="${tmp_dir}/${url_base}"
 find "${output_dir}" -type f -name '*.xz' -exec shasum -a 256 {} \; | \
   sed -e "s@${output_dir}/@@" | \
   awk '{ printf "\"%s\": \"%s\",\n", $2, $1 }'

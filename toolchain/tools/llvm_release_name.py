@@ -17,9 +17,14 @@
 import platform
 import sys
 
+def _major_llvm_version(llvm_version):
+    return int(llvm_version.split(".")[0])
+
 def _darwin(llvm_version):
-    return "clang+llvm-{llvm_version}-x86_64-apple-darwin.tar.xz".format(
-        llvm_version=llvm_version)
+    major_llvm_version = _major_llvm_version(llvm_version)
+    suffix = "darwin-apple" if major_llvm_version == 9 else "apple-darwin"
+    return "clang+llvm-{llvm_version}-x86_64-{suffix}.tar.xz".format(
+        llvm_version=llvm_version, suffix=suffix)
 
 def _windows(llvm_version):
     if platform.machine().endswith('64'):
@@ -52,7 +57,7 @@ def _linux(llvm_version):
     if "VERSION_ID" in info:
         version = info["VERSION_ID"].strip('"')
 
-    major_llvm_version = int(llvm_version.split(".")[0])
+    major_llvm_version = _major_llvm_version(llvm_version)
 
     # NOTE: Many of these systems are untested because I do not have access to them.
     # If you find this mapping wrong, please send a Pull Request on Github.
@@ -77,8 +82,10 @@ def _linux(llvm_version):
     elif ((distname == "fedora" and int(version) >= 27) or
           (distname == "centos" and int(version) >= 7)) and major_llvm_version < 7:
         os_name = "linux-gnu-Fedora27"
-    elif distname in ["fedora", "centos"] and major_llvm_version >= 7:
-        os_name = "linux-gnu-ubuntu-16.04"
+    elif distname == "centos" and major_llvm_version >= 7:
+        os_name = "linux-sles11.3"
+    elif distname == "fedora" and major_llvm_version >= 7:
+        os_name = "linux-gnu-ubuntu-18.04"
     else:
         sys.exit("Unsupported linux distribution and version: %s, %s" % (distname, version))
 
