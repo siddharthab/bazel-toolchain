@@ -38,6 +38,7 @@ def _include_dirs_str(rctx, cpu):
 
 def llvm_toolchain_impl(rctx):
   if rctx.os.name.startswith("windows"):
+    fail(rctx.os.name)
 #    rctx.file("BUILD")
 #    rctx.file("toolchains.bzl", """
 #def llvm_register_toolchains():
