@@ -37,7 +37,6 @@ def _include_dirs_str(rctx, cpu):
     return ("\n" + 12 * " ").join(["\"%s\"," % d for d in dirs])
 
 def llvm_toolchain_impl(rctx):
-    fail(rctx.os.name)
     if rctx.os.name.startswith("windows"):
 #    rctx.file("BUILD")
 #    rctx.file("toolchains.bzl", """
