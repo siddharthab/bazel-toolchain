@@ -37,13 +37,13 @@ def _include_dirs_str(rctx, cpu):
     return ("\n" + 12 * " ").join(["\"%s\"," % d for d in dirs])
 
 def llvm_toolchain_impl(rctx):
-#    if rctx.os.name.startswith("windows"):
+    if rctx.os.name.startswith("windows"):
 #    rctx.file("BUILD")
 #    rctx.file("toolchains.bzl", """
 #def llvm_register_toolchains():
 #    pass
 #    """)
-#        return
+        return
 
     repo_path = str(rctx.path(""))
     relative_path_prefix = "external/%s/" % rctx.name
