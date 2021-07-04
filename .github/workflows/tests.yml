@@ -1,4 +1,4 @@
-name: CI
+name: Tests
 
 on:
   push:
@@ -10,6 +10,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest]
         script: [run_tests.sh, run_external_tests.sh]
@@ -22,8 +23,9 @@ jobs:
   container_test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        script: [archlinux, debian, fedora, ubuntu_16_04, ubuntu_18_04, linux_sysroot]
+        script: [archlinux, debian, fedora, ubuntu_16_04, ubuntu_18_04, ubuntu_20_04, linux_sysroot]
     steps:
     - uses: actions/checkout@v2
     - name: test

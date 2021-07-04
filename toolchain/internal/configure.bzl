@@ -41,7 +41,8 @@ def llvm_toolchain_impl(rctx):
         rctx.file("BUILD")
         rctx.file("toolchains.bzl", """
 def llvm_register_toolchains():
-    pass""")
+    pass
+        """)
         return
 
     repo_path = str(rctx.path(""))
